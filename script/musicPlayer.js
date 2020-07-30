@@ -14,6 +14,19 @@ export const musicPlayerInit = () => {
 
     let trackIndex = 0;
 
+    const loadTrack = () => {
+        const isPlayed = audioPlayer.paused;
+        const track = playList[trackIndex];
+        audioImg.src = `./audio/${track}.jpg`; //подставка картинки
+        audioHeader.textContent = track.toUpperCase(); //название трека большими буквами
+        audioPlayer.src = `./audio/${track}.mp3`; //подставка трека
+
+        if (isPlayed) {
+            audioPlayer.pause();
+        } else {
+            audioPlayer.play();
+        }
+    }
 
     audioNavigation.addEventListener('click', event => {
         const target = event.target;
@@ -29,7 +42,28 @@ export const musicPlayerInit = () => {
                 audioPlayer.pause();
             }
 
+            const track = playList[trackIndex];
+            audioHeader.textContent = track.toUpperCase();
         }
+
+        if (target.classList.contains('audio-button__prev')) {
+            if (trackIndex !== 0) {
+                trackIndex--;
+            } else {
+                trackIndex = playList.length - 1;
+            }
+            loadTrack();
+        }
+
+        if (target.classList.contains('audio-button__next')) {
+            if (trackIndex === playList.length - 1) {
+                trackIndex = 0;
+            } else {
+                trackIndex++;
+            }
+            loadTrack();
+        }
+
     });
 
 
