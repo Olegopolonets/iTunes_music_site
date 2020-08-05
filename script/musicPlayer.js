@@ -1,16 +1,20 @@
-export const musicPlayerInit = () => {
-    const audio = document.querySelector('.audio');
-    const audioImg = document.querySelector('.audio-img');
-    const audioHeader = document.querySelector('.audio-header');
-    const audioPlayer = document.querySelector('.audio-player');
-    const audioNavigation = document.querySelector('.audio-navigation');
-    const audioButtonPlay = document.querySelector('.audio-button__play');
-    const audioProgress = document.querySelector('.audio-progress');
-    const audioProgressTiming = document.querySelector('.audio-progress__timing');
-    const audioTimePassed = document.querySelector('.audio-time__passed');
-    const audioTimeTotal = document.querySelector('.audio-time__total');
+import {
+    addZero
+} from './supScript.js';
 
-    const playList = ['hello', 'flow', 'speed']; // масив з музикою
+export const musicPlayerInit = () => {
+    const audio = document.querySelector(".audio");
+    const audioImg = document.querySelector(".audio-img");
+    const audioHeader = document.querySelector(".audio-header");
+    const audioPlayer = document.querySelector(".audio-player");
+    const audioNavigation = document.querySelector(".audio-navigation");
+    const audioButtonPlay = document.querySelector(".audio-button__play");
+    const audioProgress = document.querySelector(".audio-progress");
+    const audioProgressTiming = document.querySelector(".audio-progress__timing");
+    const audioTimePassed = document.querySelector(".audio-time__passed");
+    const audioTimeTotal = document.querySelector(".audio-time__total");
+
+    const playList = ["hello", "flow", "speed"]; // масив з музикою
 
     let trackIndex = 0;
 
@@ -26,17 +30,38 @@ export const musicPlayerInit = () => {
         } else {
             audioPlayer.play();
         }
-    }
+    };
 
-    audioNavigation.addEventListener('click', event => {
+    // nextTrack - перключает трек далее
+    const nextTrack = () => {
+        if (trackIndex === playList.length - 1) {
+            trackIndex = 0;
+        } else {
+            trackIndex++;
+        }
+        loadTrack();
+    };
+
+    // prevTrack - включает превидущий
+    const prevTrack = () => {
+        if (trackIndex !== 0) {
+            trackIndex--;
+        } else {
+            trackIndex = playList.length - 1;
+        }
+        loadTrack();
+    };
+
+    audioNavigation.addEventListener("click", (event) => {
         const target = event.target;
 
-        if (target.classList.contains('audio-button__play')) {
-            audio.classList.toggle('play'); // аніміція картинки    
-            audioButtonPlay.classList.toggle('fa-play'); // заміна іконки
-            audioButtonPlay.classList.toggle('fa-pause'); //заміна іконки
+        if (target.classList.contains("audio-button__play")) {
+            audio.classList.toggle("play"); // аніміція картинки
+            audioButtonPlay.classList.toggle("fa-play"); // заміна іконки
+            audioButtonPlay.classList.toggle("fa-pause"); //заміна іконки
 
-            if (audioPlayer.paused) { // включение музики
+            if (audioPlayer.paused) {
+                // включение музики
                 audioPlayer.play();
             } else {
                 audioPlayer.pause();
@@ -46,25 +71,49 @@ export const musicPlayerInit = () => {
             audioHeader.textContent = track.toUpperCase();
         }
 
-        if (target.classList.contains('audio-button__prev')) {
-            if (trackIndex !== 0) {
-                trackIndex--;
-            } else {
-                trackIndex = playList.length - 1;
-            }
-            loadTrack();
+        if (target.classList.contains("audio-button__prev")) {
+            prevTrack();
         }
 
-        if (target.classList.contains('audio-button__next')) {
-            if (trackIndex === playList.length - 1) {
-                trackIndex = 0;
-            } else {
-                trackIndex++;
-            }
-            loadTrack();
+        if (target.classList.contains("audio-button__next")) {
+            nextTrack();
         }
-
     });
 
+    // когда кончается трек, автоматично начинается новый
+    audioPlayer.addEventListener("ended", () => {
+        nextTrack();
+        audioPlayer.play();
+    });
 
+    // прогресс-бар
+    audioPlayer.addEventListener("timeupdate", () => {
+        const duration = audioPlayer.duration;
+        const currentTime = audioPlayer.currentTime;
+        const progress = (currentTime / duration) * 100;
+
+        audioProgressTiming.style.width = progress + "%"; // червона лінія
+
+        const minutesPassed = Math.floor(currentTime / 60) || "0";
+        const secondsPassed = Math.floor(currentTime % 60) || "0";
+
+        const minutesTotal = Math.floor(duration / 60) || "0";
+        const secondsTotal = Math.floor(duration % 60) || "0";
+
+        audioTimePassed.textContent = `${addZero(minutesPassed)}:${addZero(
+      secondsPassed
+    )}`;
+
+        audioTimeTotal.textContent = `${addZero(minutesTotal)}:${addZero(
+      secondsTotal
+    )}`;
+    });
+
+    // переключение времени трека
+    audioProgress.addEventListener('click', event => {
+        const x = event.offsetX;
+        const allWidth = audioProgress.clientWidth;
+        const progress = (x / allWidth) * audioPlayer.duration;
+        audioPlayer.currentTime = progress;
+    });
 };
